@@ -437,9 +437,9 @@ async def test_websockets(static_proxy: NeonProxy, port_distributor: PortDistrib
     tunnel_server = await websocket_tunnel.start_server(
         "127.0.0.1",
         tunnel_port,
-        f"wss://ep-static-test.neon.localtest.me:{static_proxy.wss_port}",
+        f"wss://ep-static-test.neon.localtest.me:{static_proxy.external_http_port}",
         "127.0.0.1",
-        static_proxy.wss_port,
+        static_proxy.external_http_port,
     )
     log.info(f"websockets tunnel listening for connections on port {tunnel_port}")
 
