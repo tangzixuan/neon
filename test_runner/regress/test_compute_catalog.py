@@ -165,7 +165,7 @@ def test_dropdb_with_subscription(neon_simple_env: NeonEnv):
         },
     ]
 
-    # Update the spec.json file to drop the database
+    # Update the spec.json file to create the databases
     # and reconfigure the endpoint to apply the changes.
     endpoint.respec_deep(
         **{
