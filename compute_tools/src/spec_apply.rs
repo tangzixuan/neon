@@ -465,9 +465,7 @@ async fn get_operations<'a>(
                         }
                         // skip this cleanup for the system databases
                         // because users can't drop them
-                        DB::SystemDB => {
-                            Ok(Box::new(empty()))
-                        }
+                        DB::SystemDB => Ok(Box::new(empty())),
                     }
                 }
                 PerDatabasePhase::DeleteDBRoleReferences => {
