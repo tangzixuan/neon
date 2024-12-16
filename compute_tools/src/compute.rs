@@ -15,7 +15,7 @@ use std::time::Instant;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
-use compute_api::spec::{PgIdent, Role};
+use compute_api::spec::{Database, PgIdent, Role};
 use futures::future::join_all;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
@@ -45,8 +45,10 @@ use crate::spec_apply::ApplySpecPhase::{
     DropInvalidDatabases, DropRoles, HandleNeonExtension, HandleOtherExtensions,
     RenameAndDeleteDatabases, RenameRoles, RunInEachDatabase,
 };
+use crate::spec_apply::PerDatabasePhase;
 use crate::spec_apply::PerDatabasePhase::{
-    ChangeSchemaPerms, DeleteDBRoleReferences, HandleAnonExtension,
+    ChangeSchemaPerms, DeleteDBRoleReferences, DropSubscriptionsForDeletedDatabases,
+    HandleAnonExtension,
 };
 use crate::spec_apply::{apply_operations, MutableApplyContext, DB};
 use crate::sync_sk::{check_if_synced, ping_safekeeper};
@@ -943,6 +945,66 @@ impl ComputeNode {
                 dbs: databases,
             }));
 
+            // Apply the per-db pre drop database phase
+            info!("Applying RunInEachDatabase1 (pre-dropdb) phase");
+            let concurrency_token = Arc::new(tokio::sync::Semaphore::new(concurrency));
+
+            // Run the phase for each database that we're about to drop.
+            let db_processes = spec
+                .delta_operations
+                .iter()
+                .flatten()
+                .filter_map(move |op| {
+                    if op.action.as_str() == "delete_db" {
+                        Some(op.name.clone())
+                    } else {
+                        None
+                    }
+                })
+                .map(|dbname| {
+                    let spec = spec.clone();
+                    let ctx = ctx.clone();
+                    let jwks_roles = jwks_roles.clone();
+                    let mut conf = conf.as_ref().clone();
+                    let concurrency_token = concurrency_token.clone();
+                    // We only need dbname field for this phase, so set other fields to dummy values
+                    let db = DB::UserDB(Database {
+                        name: dbname.clone(),
+                        owner: "cloud_admin".to_string(),
+                        options: None,
+                        restrict_conn: false,
+                        invalid: false,
+                    });
+
+                    info!("Applying per-database phases for Database {:?}", &db);
+
+                    match &db {
+                        DB::SystemDB => {}
+                        DB::UserDB(db) => {
+                            conf.dbname(db.name.as_str());
+                        }
+                    }
+
+                    let conf = Arc::new(conf);
+                    let fut = Self::apply_spec_sql_db(
+                        spec.clone(),
+                        conf,
+                        ctx.clone(),
+                        jwks_roles.clone(),
+                        concurrency_token.clone(),
+                        db,
+                        [DropSubscriptionsForDeletedDatabases].to_vec(),
+                    );
+
+                    Ok(spawn(fut))
+                })
+                .collect::<Vec<Result<_, anyhow::Error>>>();
+
+            for process in db_processes.into_iter() {
+                let handle = process?;
+                handle.await??;
+            }
+
             for phase in [
                 CreateSuperUser,
                 DropInvalidDatabases,
@@ -954,7 +1016,6 @@ impl ComputeNode {
                 info!("Applying phase {:?}", &phase);
                 apply_operations(
                     spec.clone(),
-                    conf.clone(),
                     ctx.clone(),
                     jwks_roles.clone(),
                     phase,
@@ -963,7 +1024,7 @@ impl ComputeNode {
                 .await?;
             }
 
-            info!("Applying RunInEachDatabase phase");
+            info!("Applying RunInEachDatabase2 phase");
             let concurrency_token = Arc::new(tokio::sync::Semaphore::new(concurrency));
 
             let db_processes = spec
@@ -998,6 +1059,12 @@ impl ComputeNode {
                         jwks_roles.clone(),
                         concurrency_token.clone(),
                         db,
+                        [
+                            DeleteDBRoleReferences,
+                            ChangeSchemaPerms,
+                            HandleAnonExtension,
+                        ]
+                        .to_vec(),
                     );
 
                     Ok(spawn(fut))
@@ -1018,7 +1085,6 @@ impl ComputeNode {
                 debug!("Applying phase {:?}", &phase);
                 apply_operations(
                     spec.clone(),
-                    conf.clone(),
                     ctx.clone(),
                     jwks_roles.clone(),
                     phase,
@@ -1045,19 +1111,15 @@ impl ComputeNode {
         jwks_roles: Arc<HashSet<String>>,
         concurrency_token: Arc<tokio::sync::Semaphore>,
         db: DB,
+        subphases: Vec<PerDatabasePhase>,
     ) -> Result<()> {
         let _permit = concurrency_token.acquire().await?;
 
         let mut client_conn = None;
 
-        for subphase in [
-            DeleteDBRoleReferences,
-            ChangeSchemaPerms,
-            HandleAnonExtension,
-        ] {
+        for subphase in subphases {
             apply_operations(
                 spec.clone(),
-                conf.clone(),
                 ctx.clone(),
                 jwks_roles.clone(),
                 RunInEachDatabase {
