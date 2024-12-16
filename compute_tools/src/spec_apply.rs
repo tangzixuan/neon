@@ -331,8 +331,8 @@ async fn get_operations<'a>(
                             // NB: there could be other db states, which prevent us from dropping
                             // the database. For example, if db is used by any active subscription
                             // or replication slot.
-                            // Such cases are handled with the extra operations.
-                            // We do all the cleanup before actually dropping the database.
+                            // Such cases are handled in the DropSubscriptionsForDeletedDatabases
+                            // phase. We do all the cleanup before actually dropping the database.
                             let drop_db_query: String = format!(
                                 "DROP DATABASE IF EXISTS {} WITH (FORCE)",
                                 &op.name.pg_quote()

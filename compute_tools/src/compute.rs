@@ -976,7 +976,7 @@ impl ComputeNode {
                         invalid: false,
                     });
 
-                    info!("Applying per-database phases for Database {:?}", &db);
+                    debug!("Applying per-database phases for Database {:?}", &db);
 
                     match &db {
                         DB::SystemDB => {}
