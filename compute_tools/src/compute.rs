@@ -1002,7 +1002,16 @@ impl ComputeNode {
 
             for process in db_processes.into_iter() {
                 let handle = process?;
-                handle.await??;
+                if let Err(e) = handle.await? {
+                    // Handle the error case where the database does not exist
+                    // We do not check whether the DB exists or not in the deletion phase,
+                    // so we shouldn't be strict about it in pre-deletion cleanup as well.
+                    if e.to_string().contains("does not exist") {
+                        warn!("Error dropping subscription: {}", e);
+                    } else {
+                        return Err(e);
+                    }
+                };
             }
 
             for phase in [

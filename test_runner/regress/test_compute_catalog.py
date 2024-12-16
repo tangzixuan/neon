@@ -226,6 +226,10 @@ def test_dropdb_with_subscription(neon_simple_env: NeonEnv):
             },
             "delta_operations": [
                 {"action": "delete_db", "name": "subscriber_db"},
+                # also test the case when we try to delete a non-existent database
+                # shouldn't happen in normal operation,
+                # but can occur when failed operations are retried
+                {"action": "delete_db", "name": "nonexistent_db"},
             ],
         }
     )
