@@ -461,12 +461,12 @@ async fn get_operations<'a>(
                             }]
                             .into_iter();
 
-                            return Ok(Box::new(operations));
+                            Ok(Box::new(operations))
                         }
                         // skip this cleanup for the system databases
                         // because users can't drop them
                         DB::SystemDB => {
-                            return Ok(Box::new(empty()));
+                            Ok(Box::new(empty()))
                         }
                     }
                 }
