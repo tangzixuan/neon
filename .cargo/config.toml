@@ -3,6 +3,11 @@
 # by the RUSTDOCFLAGS env var in CI.
 rustdocflags = ["-Arustdoc::private_intra_doc_links"]
 
+# Enable frame pointers. This may have a minor performance overhead, but makes
+# stack traces (and thus profiling) much faster. With continuous profiling, this
+# is likely a net win, and may allow higher profiling resolution.
+rustflags = ["-Cforce-frame-pointers=yes"]
+
 [alias]
 build_testing = ["build", "--features", "testing"]
 neon = ["run", "--bin", "neon_local"]
