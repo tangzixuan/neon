@@ -1312,6 +1312,7 @@ dependencies = [
  "tracing-utils",
  "url",
  "utils",
+ "uuid",
  "vm_monitor",
  "workspace_hack",
  "zstd",
@@ -1606,6 +1607,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "curve25519-dalek"
+version = "4.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97fb8b7c4503de7d6ae7b42ab72a5a59857b4c937ec27a3d4539dba95b5ab2be"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "curve25519-dalek-derive",
+ "digest",
+ "fiat-crypto",
+ "rustc_version",
+ "subtle",
+]
+
+[[package]]
+name = "curve25519-dalek-derive"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.90",
+]
+
+[[package]]
 name = "darling"
 version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1647,6 +1674,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6943ae99c34386c84a470c499d3414f66502a41340aa895406e0d2e4a207b91d"
 dependencies = [
  "cfg-if",
+ "hashbrown 0.14.5",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core 0.9.8",
+]
+
+[[package]]
+name = "dashmap"
+version = "6.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5041cc499144891f3790297212f32a74fb938e5136a14943f338ef9e0ae276cf"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
  "hashbrown 0.14.5",
  "lock_api",
  "once_cell",
@@ -1862,6 +1903,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "ed25519"
+version = "2.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
+dependencies = [
+ "signature 2.2.0",
+]
+
+[[package]]
+name = "ed25519-dalek"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a3daa8e81a3963a60642bcc1f90a670680bd4a77535faa384e9d1c79d620871"
+dependencies = [
+ "curve25519-dalek",
+ "ed25519",
+ "rand_core 0.6.4",
+ "sha2",
+ "subtle",
+]
+
+[[package]]
 name = "either"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1953,6 +2016,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_filter"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "186e05a59d4c50738528153b83b0b0194d3a29507dfec16eccd4b342903397d0"
+dependencies = [
+ "log",
+]
+
+[[package]]
 name = "env_logger"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1963,6 +2035,16 @@ dependencies = [
  "log",
  "regex",
  "termcolor",
+]
+
+[[package]]
+name = "env_logger"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c012a26a7f605efc424dd53697843a72be7dc86ad2d01f7814337794a12231d"
+dependencies = [
+ "env_filter",
+ "log",
 ]
 
 [[package]]
@@ -2079,6 +2161,12 @@ dependencies = [
  "rand_core 0.6.4",
  "subtle",
 ]
+
+[[package]]
+name = "fiat-crypto"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 
 [[package]]
 name = "filetime"
@@ -2949,6 +3037,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "inferno"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75a5d75fee4d36809e6b021e4b96b686e763d365ffdb03af2bd00786353f84fe"
+dependencies = [
+ "ahash",
+ "clap",
+ "crossbeam-channel",
+ "crossbeam-utils",
+ "dashmap 6.1.0",
+ "env_logger 0.11.2",
+ "indexmap 2.0.1",
+ "itoa",
+ "log",
+ "num-format",
+ "once_cell",
+ "quick-xml 0.37.1",
+ "rgb",
+ "str_stack",
+]
+
+[[package]]
 name = "inotify"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3155,7 +3265,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4644821e1c3d7a560fe13d842d13f587c07348a1a05d3a797152d41c90c56df2"
 dependencies = [
- "dashmap",
+ "dashmap 5.5.0",
  "hashbrown 0.13.2",
 ]
 
@@ -3872,9 +3982,11 @@ name = "pagectl"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bincode",
  "camino",
  "clap",
  "humantime",
+ "itertools 0.10.5",
  "pageserver",
  "pageserver_api",
  "postgres_ffi",
@@ -3896,6 +4008,7 @@ dependencies = [
  "arc-swap",
  "async-compression",
  "async-stream",
+ "bincode",
  "bit_field",
  "byteorder",
  "bytes",
@@ -3935,6 +4048,7 @@ dependencies = [
  "postgres_connection",
  "postgres_ffi",
  "postgres_initdb",
+ "pprof",
  "pq_proto",
  "procfs",
  "rand 0.8.5",
@@ -4421,7 +4535,7 @@ dependencies = [
  "bytes",
  "crc32c",
  "criterion",
- "env_logger",
+ "env_logger 0.10.2",
  "log",
  "memoffset 0.9.0",
  "once_cell",
@@ -4462,7 +4576,7 @@ dependencies = [
  "cfg-if",
  "criterion",
  "findshlibs",
- "inferno",
+ "inferno 0.11.21",
  "libc",
  "log",
  "nix 0.26.4",
@@ -4688,9 +4802,10 @@ dependencies = [
  "clap",
  "compute_api",
  "consumption_metrics",
- "dashmap",
+ "dashmap 5.5.0",
  "ecdsa 0.16.9",
- "env_logger",
+ "ed25519-dalek",
+ "env_logger 0.10.2",
  "fallible-iterator",
  "flate2",
  "framed-websockets",
@@ -4795,6 +4910,15 @@ checksum = "1004a344b30a54e2ee58d66a71b32d2db2feb0a31f9a2d302bf0536f15de2a33"
 dependencies = [
  "memchr",
  "serde",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.37.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f22f29bdff3987b4d8632ef95fd6424ec7e4e0a57e2f4fc63e489e75357f6a03"
+dependencies = [
+ "memchr",
 ]
 
 [[package]]
@@ -5535,6 +5659,7 @@ dependencies = [
  "crc32c",
  "criterion",
  "desim",
+ "env_logger 0.10.2",
  "fail",
  "futures",
  "hex",
@@ -5563,6 +5688,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "smallvec",
  "storage_broker",
  "strum",
  "strum_macros",
@@ -5587,10 +5713,13 @@ dependencies = [
 name = "safekeeper_api"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "const_format",
+ "pageserver_api",
  "postgres_ffi",
  "pq_proto",
  "serde",
+ "serde_json",
  "tokio",
  "utils",
 ]
@@ -7319,6 +7448,7 @@ dependencies = [
  "hex-literal",
  "humantime",
  "hyper 0.14.30",
+ "inferno 0.12.0",
  "itertools 0.10.5",
  "jemalloc_pprof",
  "jsonwebtoken",
@@ -7422,7 +7552,7 @@ dependencies = [
  "anyhow",
  "camino-tempfile",
  "clap",
- "env_logger",
+ "env_logger 0.10.2",
  "log",
  "postgres",
  "postgres_ffi",
@@ -7437,12 +7567,21 @@ dependencies = [
  "anyhow",
  "async-compression",
  "bytes",
+ "camino",
+ "camino-tempfile",
+ "criterion",
+ "futures",
  "pageserver_api",
  "postgres_ffi",
+ "pprof",
  "prost",
+ "remote_storage",
  "serde",
+ "serde_json",
  "thiserror",
+ "tikv-jemallocator",
  "tokio",
+ "tokio-util",
  "tonic",
  "tonic-build",
  "tracing",
