@@ -4323,6 +4323,7 @@ dependencies = [
  "pageserver_api",
  "postgres_ffi",
  "remote_storage",
+ "serde",
  "serde_json",
  "svg_fmt",
  "thiserror 1.0.69",
@@ -4499,6 +4500,7 @@ name = "pageserver_client_grpc"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "arc-swap",
  "bytes",
  "compute_api",
  "futures",
